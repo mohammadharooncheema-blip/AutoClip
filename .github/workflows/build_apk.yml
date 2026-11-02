@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -38,3 +40,10 @@ jobs:
         with:
           name: AutoClip-Release-APK
           path: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Publish APK to a release
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "autoclip-flutter-${{ github.run_number }}" build/app/outputs/flutter-apk/app-release.apk --title "AutoClip Flutter APK ${{ github.run_number }}" --notes "Built from main commit ${{ github.sha }}" || gh release upload "autoclip-flutter-${{ github.run_number }}" build/app/outputs/flutter-apk/app-release.apk --clobber
